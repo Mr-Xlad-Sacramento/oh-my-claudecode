@@ -64,6 +64,103 @@ export {
 } from './features/auto-update.js';
 export * from './shared/types.js';
 
+// Hooks module exports
+export * from './hooks/index.js';
+
+// Features module exports (boulder-state, context-injector)
+export {
+  // Boulder State
+  type BoulderState,
+  type PlanProgress,
+  type PlanSummary,
+  BOULDER_DIR,
+  BOULDER_FILE,
+  BOULDER_STATE_PATH,
+  NOTEPAD_DIR,
+  NOTEPAD_BASE_PATH,
+  PROMETHEUS_PLANS_DIR,
+  PLAN_EXTENSION,
+  getBoulderFilePath,
+  readBoulderState,
+  writeBoulderState,
+  appendSessionId,
+  clearBoulderState,
+  findPrometheusPlans,
+  getPlanProgress,
+  getPlanName,
+  createBoulderState,
+  getPlanSummaries,
+  hasBoulder,
+  getActivePlanPath,
+  // Context Injector
+  ContextCollector,
+  contextCollector,
+  injectPendingContext,
+  injectContextIntoText,
+  createContextInjectorHook,
+  type ContextSourceType,
+  type ContextPriority,
+  type ContextEntry,
+  type RegisterContextOptions,
+  type PendingContext,
+  type MessageContext,
+  type OutputPart,
+  type InjectionStrategy,
+  type InjectionResult
+} from './features/index.js';
+
+// Agent module exports (modular agent system)
+export {
+  // Types
+  type ModelType,
+  type AgentCost,
+  type AgentCategory,
+  type DelegationTrigger,
+  type AgentPromptMetadata,
+  type AgentConfig,
+  type FullAgentConfig,
+  type AgentOverrideConfig,
+  type AgentOverrides,
+  type AgentFactory,
+  type AvailableAgent,
+  isGptModel,
+  isClaudeModel,
+  getDefaultModelForCategory,
+  // Utilities
+  createAgentToolRestrictions,
+  mergeAgentConfig,
+  buildDelegationTable,
+  buildUseAvoidSection,
+  createEnvContext,
+  getAvailableAgents,
+  buildKeyTriggersSection,
+  validateAgentConfig,
+  deepMerge,
+  // Individual agents with metadata
+  oracleAgent,
+  ORACLE_PROMPT_METADATA,
+  exploreAgent,
+  EXPLORE_PROMPT_METADATA,
+  librarianAgent,
+  LIBRARIAN_PROMPT_METADATA,
+  sisyphusJuniorAgent,
+  SISYPHUS_JUNIOR_PROMPT_METADATA,
+  frontendEngineerAgent,
+  FRONTEND_ENGINEER_PROMPT_METADATA,
+  documentWriterAgent,
+  DOCUMENT_WRITER_PROMPT_METADATA,
+  multimodalLookerAgent,
+  MULTIMODAL_LOOKER_PROMPT_METADATA,
+  momusAgent,
+  MOMUS_PROMPT_METADATA,
+  metisAgent,
+  METIS_PROMPT_METADATA,
+  orchestratorSisyphusAgent,
+  ORCHESTRATOR_SISYPHUS_PROMPT_METADATA,
+  prometheusAgent,
+  PROMETHEUS_PROMPT_METADATA
+} from './agents/index.js';
+
 // Command expansion utilities for SDK integration
 export {
   expandCommand,
