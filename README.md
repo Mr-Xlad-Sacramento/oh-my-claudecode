@@ -88,7 +88,17 @@ python_repl(action="execute", researchSessionID="analysis",
 - Memory tracking (RSS/VMS)
 - Session locking for safe concurrent access
 
-Use `/research` to orchestrate parallel scientist agents for complex research tasks.
+### /research Command
+
+Orchestrate parallel scientist agents for comprehensive research:
+
+```
+/research <goal>           # Standard research with checkpoints
+/research AUTO: <goal>     # Fully autonomous until complete
+/research status           # Check current session
+```
+
+Features multi-stage decomposition, smart model routing, cross-validation, and structured report generation.
 
 ---
 
@@ -106,7 +116,7 @@ I'll intelligently determine what to stop based on context.
 ## What's Under the Hood
 
 - **28 Specialized Agents** - architect, researcher, explore, designer, writer, vision, critic, analyst, executor, planner, qa-tester, scientist (with tier variants)
-- **29 Skills** - orchestrate, ultrawork, ralph, planner, deepsearch, deepinit, git-master, frontend-ui-ux, learner, research, and more
+- **30 Skills** - orchestrate, ultrawork, ralph, planner, deepsearch, deepinit, git-master, frontend-ui-ux, learner, research, and more
 - **Persistent Python REPL** - True variable persistence for data analysis (new in 3.3.0)
 - **HUD Statusline** - Real-time visualization of orchestration state
 - **Learned Skills** - Extract reusable insights from sessions with `/learner`

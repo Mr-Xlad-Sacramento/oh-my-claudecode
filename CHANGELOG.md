@@ -24,10 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Session locking with PID verification for safe concurrent access
   - Security: Socket mode 0600, path validation, symlink protection, signal escalation
 
-- **Research Skill** (`/research`): Orchestrate parallel scientist agents for complex research
-  - Session management with state tracking
-  - Promise tags for AUTO mode loop control
-  - Tag extraction for findings aggregation
+- **Research Command** (`/research`): Orchestrate parallel scientist agents for complex research
+  - Multi-stage decomposition (3-7 independent stages)
+  - Smart model routing: LOW (Haiku) / MEDIUM (Sonnet) / HIGH (Opus)
+  - Parallel execution with 5 agent concurrency limit
+  - Cross-validation and verification loop
+  - AUTO mode for fully autonomous execution with loop control
+  - Session persistence and resume support
+  - Structured report generation with findings aggregation
 
 ### Technical Details
 
@@ -60,7 +64,7 @@ python_repl(action="execute", researchSessionID="analysis",
 ### Changed
 
 - Agent count: 28 (added scientist, scientist-low, scientist-high)
-- Skill count: 29 (added research)
+- Skill count: 30 (added research)
 - Updated `src/tools/index.ts` to include `pythonReplTool`
 - Updated `package.json` to include `bridge/` in published files
 
