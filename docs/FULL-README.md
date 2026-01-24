@@ -10,7 +10,7 @@
 
 # oh-my-claudecode
 
-[![Version](https://img.shields.io/badge/version-3.4.1-ff6b6b)](https://github.com/Yeachan-Heo/oh-my-claudecode)
+[![Version](https://img.shields.io/badge/version-3.4.2-ff6b6b)](https://github.com/Yeachan-Heo/oh-my-claudecode)
 [![npm version](https://img.shields.io/npm/v/oh-my-claude-sisyphus?color=cb3837)](https://www.npmjs.com/package/oh-my-claudecode)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -143,7 +143,7 @@ Background agent resumption with context preservation via `resumeSession()`.
 
 ---
 
-## NEW in 3.4.1: Parallel Execution & Advanced Workflows
+## NEW in 3.4.2: Parallel Execution & Advanced Workflows
 
 **Game-changing features:** Ultrapilot, swarm orchestration, and pipeline workflows for 3-5x faster execution.
 
