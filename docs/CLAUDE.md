@@ -78,6 +78,7 @@ When implementing with any external tool (Claude Code hooks, React, database dri
 | **Research tasks** | NEVER | researcher |
 | **Data analysis** | NEVER | scientist / scientist-high |
 | **Visual analysis** | NEVER | vision |
+| **Strategic planning** | NEVER | planner |
 
 ### Mandatory Skill Invocation
 
@@ -292,9 +293,23 @@ See [Agent Tiers Reference](./shared/agent-tiers.md) for the full MCP tool assig
 
 ---
 
-## PART 4: SHARED DOCUMENTATION
+## PART 4: NEW FEATURES & SHARED DOCUMENTATION
 
-For detailed reference on specific topics:
+### Features (v3.1 - v3.4)
+
+See [Features Reference](./shared/features.md) for complete documentation of:
+- Notepad Wisdom System (plan-scoped learning capture)
+- Delegation Categories (auto-mapping to model tier/temperature)
+- Directory Diagnostics Tool (project-level type checking)
+- Session Resume (background agent continuation)
+- Ultrapilot (parallel autopilot, 3-5x faster)
+- Swarm (N-agent coordinated task pool)
+- Pipeline (sequential agent chaining with presets)
+- Unified Cancel (smart mode detection)
+- Verification Module (standard checks, evidence validation)
+- State Management (standardized paths, `~/.claude/` prohibition)
+
+### Shared Reference Documents
 
 | Topic | Document |
 |-------|----------|
@@ -302,6 +317,7 @@ For detailed reference on specific topics:
 | Mode Hierarchy & Relationships | [mode-hierarchy.md](./shared/mode-hierarchy.md) |
 | Mode Selection Guide | [mode-selection-guide.md](./shared/mode-selection-guide.md) |
 | Verification Tiers | [verification-tiers.md](./shared/verification-tiers.md) |
+| Features Reference | [features.md](./shared/features.md) |
 
 ---
 

@@ -93,7 +93,11 @@ Ralph is a **persistence wrapper** that includes Ultrawork as a component for ma
 
 ### Available Agents by Tier
 
-See `/docs/shared/agent-tiers.md` for the complete agent tier matrix and routing guide.
+**FIRST ACTION:** Before delegating any work, read the agent reference file:
+```
+Read file: docs/shared/agent-tiers.md
+```
+This provides the complete agent tier matrix, MCP tool assignments, and selection guidance.
 
 **CRITICAL: Always pass `model` parameter explicitly!**
 ```
@@ -164,6 +168,12 @@ Before spawning architect for verification, determine the appropriate tier:
 | Standard changes | STANDARD | architect-medium (sonnet) |
 | >20 files, security/architectural | THOROUGH | architect (opus) |
 
+### Ralph Minimum Verification Tier
+
+**Floor: STANDARD (architect-medium / sonnet)**
+
+Even for small changes (<5 files), ralph requires at least STANDARD tier verification. The LIGHT tier (haiku) is insufficient for ralph's completion guarantee. When tier selection returns LIGHT, upgrade to STANDARD.
+
 ### Verification Flow
 
 1. **Collect change metadata**: Count files, lines, detect security/architectural patterns
@@ -183,7 +193,7 @@ Before spawning architect for verification, determine the appropriate tier:
 5. **If approved**: Run `/oh-my-claudecode:cancel` to cleanly exit
 6. **If rejected**: Fix issues and re-verify (same tier)
 
-See `/docs/shared/verification-tiers.md` for complete tier selection rules.
+For complete tier selection rules, read: `docs/shared/verification-tiers.md`
 
 ## ZERO TOLERANCE
 

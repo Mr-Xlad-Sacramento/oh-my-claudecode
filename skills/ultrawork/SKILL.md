@@ -28,7 +28,11 @@ Ultrawork is automatically activated by:
 
 ## Smart Model Routing
 
-See `/docs/shared/agent-tiers.md` for the complete agent tier matrix and routing guide.
+**FIRST ACTION:** Before delegating any work, read the agent reference file:
+```
+Read file: docs/shared/agent-tiers.md
+```
+This provides the complete agent tier matrix, MCP tool assignments, and selection guidance.
 
 **CRITICAL: Always pass `model` parameter explicitly!**
 
@@ -76,3 +80,16 @@ Use `ralph` instead when you want:
 - Verified completion (architect check)
 - Automatic retry on failure
 - Session persistence for resume
+
+## Completion Verification (Direct Invocations)
+
+When ultrawork is invoked directly (not via ralph), apply lightweight verification before claiming completion:
+
+### Quick Verification Checklist
+- [ ] **BUILD:** `tsc --noEmit` or equivalent passes
+- [ ] **TESTS:** Run affected tests, all pass
+- [ ] **ERRORS:** No new errors introduced
+
+This is lighter than ralph's full verification but ensures basic quality for direct ultrawork usage.
+
+For full persistence and comprehensive verification, use `ralph` mode instead.

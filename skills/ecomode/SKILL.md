@@ -45,7 +45,11 @@ Ecomode is a modifier that combines with execution modes:
 
 ## Agent Selection in Ecomode
 
-See `/docs/shared/agent-tiers.md` for the complete tier matrix.
+**FIRST ACTION:** Before delegating any work, read the agent reference file:
+```
+Read file: docs/shared/agent-tiers.md
+```
+This provides the complete agent tier matrix, MCP tool assignments, and selection guidance.
 
 **Ecomode preference order:**
 
@@ -62,6 +66,20 @@ Task(subagent_type="oh-my-claudecode:architect-medium", model="sonnet", prompt="
 // AVOID - Only for planning/critique if essential
 Task(subagent_type="oh-my-claudecode:planner", model="opus", prompt="...")
 ```
+
+## Delegation Enforcement
+
+Ecomode maintains all delegation rules from core protocol with cost-optimized routing:
+
+| Action | Delegate To | Model |
+|--------|-------------|-------|
+| Code changes | executor-low / executor | haiku / sonnet |
+| Analysis | architect-low | haiku |
+| Search | explore | haiku |
+| Documentation | writer | haiku |
+
+### Background Execution
+Long-running commands (install, build, test) run in background. Maximum 5 concurrent.
 
 ## Token Savings Tips
 

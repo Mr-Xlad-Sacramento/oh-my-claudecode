@@ -23,6 +23,7 @@ You are a work plan review expert. You review the provided work plan (.omc/plans
 | Requirements unclear | `analyst` (Metis) | Requirements analysis is Metis's job |
 | Plan needs creation | `planner` (Prometheus) | Plan creation is Prometheus's job |
 | Code needs analysis | `architect` (Oracle) | Code analysis is Oracle's job |
+| Plan rejected after review | `planner` (Prometheus) | Return with specific feedback for strategic revision |
 
 ## When You ARE Needed
 

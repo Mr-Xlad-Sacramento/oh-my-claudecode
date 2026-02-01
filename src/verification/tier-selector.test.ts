@@ -178,3 +178,145 @@ describe('buildChangeMetadata', () => {
     expect(metadata.testCoverage).toBe('partial');
   });
 });
+
+describe('boundary values', () => {
+  it('returns STANDARD for exactly 5 files with full test coverage', () => {
+    const changes: ChangeMetadata = {
+      filesChanged: 5,
+      linesChanged: 50,
+      hasArchitecturalChanges: false,
+      hasSecurityImplications: false,
+      testCoverage: 'full',
+    };
+    // 5 files is at the boundary - should NOT qualify for LIGHT (which requires < 5)
+    expect(selectVerificationTier(changes)).toBe('STANDARD');
+  });
+
+  it('returns STANDARD for exactly 100 lines with full test coverage', () => {
+    const changes: ChangeMetadata = {
+      filesChanged: 3,
+      linesChanged: 100,
+      hasArchitecturalChanges: false,
+      hasSecurityImplications: false,
+      testCoverage: 'full',
+    };
+    // 100 lines is at the boundary - should NOT qualify for LIGHT (which requires < 100)
+    expect(selectVerificationTier(changes)).toBe('STANDARD');
+  });
+
+  it('returns THOROUGH for exactly 21 files', () => {
+    const changes: ChangeMetadata = {
+      filesChanged: 21,
+      linesChanged: 100,
+      hasArchitecturalChanges: false,
+      hasSecurityImplications: false,
+      testCoverage: 'full',
+    };
+    // 21 files exceeds > 20 threshold
+    expect(selectVerificationTier(changes)).toBe('THOROUGH');
+  });
+
+  it('returns STANDARD for exactly 20 files', () => {
+    const changes: ChangeMetadata = {
+      filesChanged: 20,
+      linesChanged: 100,
+      hasArchitecturalChanges: false,
+      hasSecurityImplications: false,
+      testCoverage: 'full',
+    };
+    // 20 files does NOT exceed > 20 threshold
+    expect(selectVerificationTier(changes)).toBe('STANDARD');
+  });
+});
+
+describe('edge cases', () => {
+  it('handles testCoverage: none', () => {
+    const changes: ChangeMetadata = {
+      filesChanged: 2,
+      linesChanged: 50,
+      hasArchitecturalChanges: false,
+      hasSecurityImplications: false,
+      testCoverage: 'none',
+    };
+    // No test coverage means it can't qualify for LIGHT
+    expect(selectVerificationTier(changes)).toBe('STANDARD');
+  });
+
+  it('handles empty file list in buildChangeMetadata', () => {
+    const metadata = buildChangeMetadata([], 0);
+    expect(metadata.filesChanged).toBe(0);
+    expect(metadata.linesChanged).toBe(0);
+    expect(metadata.hasArchitecturalChanges).toBe(false);
+    expect(metadata.hasSecurityImplications).toBe(false);
+  });
+
+  it('handles zero files and zero lines', () => {
+    const changes: ChangeMetadata = {
+      filesChanged: 0,
+      linesChanged: 0,
+      hasArchitecturalChanges: false,
+      hasSecurityImplications: false,
+      testCoverage: 'full',
+    };
+    // 0 files and 0 lines with full coverage qualifies for LIGHT
+    expect(selectVerificationTier(changes)).toBe('LIGHT');
+  });
+});
+
+describe('false-positive prevention', () => {
+  describe('detectSecurityImplications', () => {
+    it('does NOT flag tokenizer.ts as security file', () => {
+      expect(detectSecurityImplications(['src/utils/tokenizer.ts'])).toBe(false);
+    });
+
+    it('does NOT flag StringTokenizer.ts as security file', () => {
+      expect(detectSecurityImplications(['src/lexer/StringTokenizer.ts'])).toBe(false);
+    });
+
+    it('does NOT flag secretariat.ts as security file', () => {
+      expect(detectSecurityImplications(['src/admin/secretariat.ts'])).toBe(false);
+    });
+
+    it('does NOT flag permissionless.ts as security file', () => {
+      expect(detectSecurityImplications(['src/blockchain/permissionless.ts'])).toBe(false);
+    });
+
+    it('DOES flag auth/token.ts as security file', () => {
+      expect(detectSecurityImplications(['src/auth/token.ts'])).toBe(true);
+    });
+
+    it('DOES flag secrets.yaml as security file', () => {
+      expect(detectSecurityImplications(['config/secrets.yaml'])).toBe(true);
+    });
+
+    it('DOES flag .env.local as security file', () => {
+      expect(detectSecurityImplications(['.env.local'])).toBe(true);
+    });
+
+    it('DOES flag permissions.ts as security file', () => {
+      expect(detectSecurityImplications(['src/permissions.ts'])).toBe(true);
+    });
+  });
+
+  describe('detectArchitecturalChanges', () => {
+    it('does NOT flag barrel index.ts as architectural', () => {
+      expect(detectArchitecturalChanges(['src/components/index.ts'])).toBe(false);
+    });
+
+    it('does NOT flag nested barrel index.ts as architectural', () => {
+      expect(detectArchitecturalChanges(['src/utils/helpers/index.ts'])).toBe(false);
+    });
+
+    it('DOES still flag config.ts as architectural', () => {
+      expect(detectArchitecturalChanges(['src/config.ts'])).toBe(true);
+    });
+
+    it('DOES still flag package.json as architectural', () => {
+      expect(detectArchitecturalChanges(['package.json'])).toBe(true);
+    });
+
+    it('DOES still flag tsconfig.json as architectural', () => {
+      expect(detectArchitecturalChanges(['tsconfig.json'])).toBe(true);
+    });
+  });
+});

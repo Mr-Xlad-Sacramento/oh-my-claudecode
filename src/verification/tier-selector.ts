@@ -82,7 +82,6 @@ export function detectArchitecturalChanges(files: string[]): boolean {
     /schema\.(ts|prisma|sql)$/i,
     /definitions\.ts$/i,
     /types\.ts$/i,
-    /index\.(ts|js)$/i, // barrel exports
     /package\.json$/i,
     /tsconfig\.json$/i,
   ];
@@ -97,16 +96,16 @@ export function detectArchitecturalChanges(files: string[]): boolean {
  */
 export function detectSecurityImplications(files: string[]): boolean {
   const securityPatterns = [
-    /\/auth\//i,
-    /\/security\//i,
-    /permission/i,
-    /credential/i,
-    /secret/i,
-    /token/i,
-    /\.env/i,
-    /password/i,
-    /oauth/i,
-    /jwt/i,
+    /\/auth\//i,                              // auth directory
+    /\/security\//i,                          // security directory
+    /(^|[\/-])permissions?\.(ts|js)$/i,       // permission.ts, permissions.ts
+    /(^|[\/-])credentials?\.(ts|js|json)$/i,  // credential.ts, credentials.json
+    /(^|[\/-])secrets?\.(ts|js|json|ya?ml)$/i, // secret.ts, secrets.yaml
+    /(^|[\/-])tokens?\.(ts|js|json)$/i,       // token.ts, auth-token.ts
+    /\.(env|pem|key)(\.|$)/i,                 // .env, .env.local, cert.pem, private.key
+    /(^|[\/-])passwords?\.(ts|js|json)$/i,    // password.ts
+    /(^|[\/-])oauth\b/i,                      // oauth.ts, oauth-config.ts
+    /(^|[\/-])jwt\b/i,                        // jwt.ts, jwt-utils.ts
   ];
 
   return files.some((file) =>
