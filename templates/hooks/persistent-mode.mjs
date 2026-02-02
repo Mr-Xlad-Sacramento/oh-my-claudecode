@@ -190,7 +190,11 @@ async function main() {
   try {
     const input = await readStdin();
     let data = {};
-    try { data = JSON.parse(input); } catch {}
+    try { data = JSON.parse(input); } catch {
+      // Invalid JSON - allow stop to prevent hanging
+      process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+      return;
+    }
 
     const directory = data.directory || process.cwd();
     const sessionId = data.sessionId || data.session_id || '';
@@ -419,9 +423,69 @@ async function main() {
     console.log(JSON.stringify({ continue: true }));
   } catch (error) {
     // On any error, allow stop rather than blocking forever
-    console.error(`[persistent-mode] Error: ${error.message}`);
-    console.log(JSON.stringify({ continue: true }));
+    // CRITICAL: Use process.stdout.write instead of console.log to avoid
+    // cascading errors if stdout/stderr are broken (issue #319)
+    // Wrap in try-catch to handle EPIPE and other stream errors gracefully
+    try {
+      process.stderr.write(`[persistent-mode] Error: ${error?.message || error}\n`);
+    } catch {
+      // Ignore stderr errors - we just need to return valid JSON
+    }
+    try {
+      process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+    } catch {
+      // If stdout write fails, the hook will timeout and Claude Code will proceed
+      // This is better than hanging forever
+      process.exit(0);
+    }
   }
 }
 
-main();
+// Global error handlers to prevent hook from hanging on uncaught errors (issue #319)
+process.on('uncaughtException', (error) => {
+  try {
+    process.stderr.write(`[persistent-mode] Uncaught exception: ${error?.message || error}\n`);
+  } catch {
+    // Ignore
+  }
+  try {
+    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+  } catch {
+    // If we can't write, just exit
+  }
+  process.exit(0);
+});
+
+process.on('unhandledRejection', (error) => {
+  try {
+    process.stderr.write(`[persistent-mode] Unhandled rejection: ${error?.message || error}\n`);
+  } catch {
+    // Ignore
+  }
+  try {
+    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+  } catch {
+    // If we can't write, just exit
+  }
+  process.exit(0);
+});
+
+// Safety timeout: if hook doesn't complete in 10 seconds, force exit
+// This prevents infinite hangs from any unforeseen issues
+const safetyTimeout = setTimeout(() => {
+  try {
+    process.stderr.write('[persistent-mode] Safety timeout reached, forcing exit\n');
+  } catch {
+    // Ignore
+  }
+  try {
+    process.stdout.write(JSON.stringify({ continue: true }) + '\n');
+  } catch {
+    // If we can't write, just exit
+  }
+  process.exit(0);
+}, 10000);
+
+main().finally(() => {
+  clearTimeout(safetyTimeout);
+});

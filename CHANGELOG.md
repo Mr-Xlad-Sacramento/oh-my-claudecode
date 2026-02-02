@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.9.7] - 2026-02-02
+
+### Fixed
+
+- **Stop Hook Freeze on Bash Errors** (#319) - Fixed persistent-mode hook causing session freezes when bash commands encounter errors. The root cause was cascading errors in the catch block when stdout/stderr streams were broken:
+  - Replaced `console.log`/`console.error` with `process.stdout.write`/`process.stderr.write` in error handlers
+  - Added nested try-catch blocks to handle EPIPE and broken pipe errors gracefully
+  - Added global `uncaughtException` and `unhandledRejection` handlers to prevent hook hangs
+  - Added 10-second safety timeout to force exit if hook doesn't complete
+  - Added early return for invalid JSON input to prevent unnecessary processing
+  - Hook now guarantees to return `{ continue: true }` even on catastrophic errors
+
+---
+
 ## [3.9.2] - 2026-02-01
 
 ### Added
