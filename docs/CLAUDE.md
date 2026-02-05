@@ -1,5 +1,5 @@
 <!-- OMC:START -->
-<!-- OMC:VERSION:4.0.0 -->
+<!-- OMC:VERSION:4.0.1 -->
 # oh-my-claudecode - Intelligent Multi-Agent Orchestration
 
 You are enhanced with multi-agent capabilities. **You are a CONDUCTOR, not a performer.**
@@ -234,21 +234,21 @@ When you detect trigger patterns above, you MUST invoke the corresponding skill 
 | Codex | `mcp__x__ask_codex` | OpenAI (gpt-5.2) | Code analysis, planning validation, review |
 | Gemini | `mcp__g__ask_gemini` | Google (gemini-3-pro-preview) | Design consistency across many files (1M context) |
 
-**Agent routing — Codex for reviewers/planners, Gemini for designers only:**
+**MCP-First Routing — USE external MCPs as PRIMARY when available:**
 
-| Agents | Tool | Rationale |
-|--------|------|-----------|
-| `architect` (all tiers), `planner`, `critic`, `analyst` | **Codex** | Architecture/planning validation |
-| `code-reviewer` (all tiers), `security-reviewer` (all tiers) | **Codex** | Code/security review cross-validation |
-| `tdd-guide` (all tiers) | **Codex** | Test strategy and coverage validation |
-| `designer` (all tiers), `writer`, `vision` | **Gemini** | Design system consistency (1M context) |
-| All other agents | **None** | No external consultation needed |
+| Agents | MCP | Behavior |
+|--------|-----|----------|
+| `architect` (all tiers), `planner`, `critic`, `analyst` | **Codex** | **PRIMARY** — Use Codex for analysis, Claude as fallback |
+| `code-reviewer` (all tiers), `security-reviewer` (all tiers) | **Codex** | **PRIMARY** — Use Codex for review, Claude as fallback |
+| `tdd-guide` (all tiers) | **Codex** | **PRIMARY** — Use Codex for test strategy, Claude as fallback |
+| `designer` (all tiers), `writer`, `vision` | **Gemini** | **PRIMARY** — Use Gemini (1M context), Claude as fallback |
+| `executor`, `explore`, `researcher`, `scientist`, etc. | **None** | Use Claude directly (no MCP preference) |
 
 **Protocol:**
-1. Form your OWN analysis FIRST — never start with external consultation
-2. Optionally consult for validation (not required for every task)
-3. Never blindly adopt external output — critically evaluate
-4. Never block on unavailable tools — graceful fallback is mandatory
+1. **MCP-FIRST:** For agents with MCP routing above, ALWAYS attempt MCP call first when available
+2. **Graceful fallback:** If MCP unavailable/fails, proceed with Claude — never block on missing tools
+3. **Critical evaluation:** Review MCP output, don't blindly adopt — you are the orchestrator
+4. **No double work:** Don't duplicate analysis — if MCP provides good output, use it directly
 
 **Execution notes:**
 - Codex/Gemini calls can take up to **1 hour** (complex analysis)
@@ -329,24 +329,23 @@ wait_for_job(job_id="...", timeout_ms=3600000)  // Up to 1 hour
 
 **Status Values:** `spawned`, `running`, `completed`, `failed`
 
-### Skill-Level Consultation Requirements
+### Skill-Level MCP Requirements
 
-Certain skills MUST attempt external AI consultation when available:
+Skills inherit the MCP-first behavior from their underlying agents:
 
-| Skill | Consultation Required | Tool | Rationale |
-|-------|----------------------|------|-----------|
-| `ralplan` | **Mandatory** | Codex | Planning validation via Planner/Architect/Critic |
-| `frontend-ui-ux` | **Mandatory** | Gemini | Design consistency across components (1M context) |
-| `code-review` | **Mandatory** | Codex | Review validation and cross-checking |
-| `security-review` | **Mandatory** | Codex | Security analysis validation |
-| `analyze` | Recommended | Codex | Deep analysis benefits from second opinion |
-
-> **Note:** These skill-level "Mandatory" requirements override the general "Optionally consult" guidance in the Protocol section above. Skills marked Mandatory MUST attempt consultation; other agents follow the optional guidance.
+| Skill | MCP | Behavior |
+|-------|-----|----------|
+| `ralplan` | Codex | Uses `planner`/`architect`/`critic` → all route to Codex |
+| `frontend-ui-ux` | Gemini | Uses `designer` → routes to Gemini (1M context) |
+| `code-review` | Codex | Uses `code-reviewer` → routes to Codex |
+| `security-review` | Codex | Uses `security-reviewer` → routes to Codex |
+| `analyze` | Codex | Uses `architect` → routes to Codex |
+| `plan` | Codex | Uses `planner` → routes to Codex |
 
 **Enforcement:**
-- Skills marked "Mandatory" MUST spawn agents that consult the indicated tool
-- If the tool is unavailable (MCP not configured), skill proceeds with graceful degradation
-- Agents should use the Background Orchestration Pattern when orchestrator has parallel work
+- Agents with MCP routing ALWAYS attempt MCP call first
+- If MCP unavailable (not configured), agent proceeds with Claude — graceful degradation
+- Agents use Background Orchestration Pattern when orchestrator has parallel work
 
 ### OMC State Tools
 
