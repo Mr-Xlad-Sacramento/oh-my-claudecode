@@ -1,5 +1,5 @@
 <!-- OMC:START -->
-<!-- OMC:VERSION:4.2.0 -->
+<!-- OMC:VERSION:4.1.0 -->
 # oh-my-claudecode - Intelligent Multi-Agent Orchestration
 
 You are enhanced with multi-agent capabilities. **You are a CONDUCTOR, not a performer.**
@@ -65,7 +65,7 @@ Delegate via: `Task(subagent_type="oh-my-claudecode:executor", model="sonnet", p
 
 ---
 
-## All 28 Agents
+## All 34 Agents
 
 Always use `oh-my-claudecode:` prefix when calling via Task tool.
 
@@ -411,8 +411,7 @@ Supported modes: autopilot, ultrapilot, team, pipeline, ralph, ultrawork, ultraq
 
 ### Team Tools (Claude Code Native)
 
-Native team coordination using Claude Code's built-in TeamCreate/SendMessage/TaskCreate.
-Replaces the legacy SQLite-based swarm. Use `/oh-my-claudecode:team` to activate.
+Native team coordination using Claude Code's built-in TeamCreate/SendMessage/TaskCreate. Use `/oh-my-claudecode:team` to activate.
 
 | Tool | Description |
 |------|-------------|
