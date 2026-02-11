@@ -88,7 +88,7 @@ async function main() {
   try {
     data = JSON.parse(input);
   } catch {
-    console.log(JSON.stringify({ continue: true }));
+    console.log(JSON.stringify({ continue: true, suppressOutput: true }));
     return;
   }
 
@@ -109,14 +109,14 @@ async function main() {
         }
       }));
     } else {
-      console.log(JSON.stringify({ continue: true }));
+      console.log(JSON.stringify({ continue: true, suppressOutput: true }));
     }
     return;
   }
 
   // Only check Edit and Write tools
   if (!['Edit', 'Write', 'edit', 'write'].includes(toolName)) {
-    console.log(JSON.stringify({ continue: true }));
+    console.log(JSON.stringify({ continue: true, suppressOutput: true }));
     return;
   }
 
@@ -126,13 +126,13 @@ async function main() {
 
   // No file path? Allow
   if (!filePath) {
-    console.log(JSON.stringify({ continue: true }));
+    console.log(JSON.stringify({ continue: true, suppressOutput: true }));
     return;
   }
 
   // Check if allowed path
   if (isAllowedPath(filePath)) {
-    console.log(JSON.stringify({ continue: true }));
+    console.log(JSON.stringify({ continue: true, suppressOutput: true }));
     return;
   }
 
@@ -156,9 +156,9 @@ This is a soft warning. Operation will proceed.`;
   }
 
   // Not a source file, allow without warning
-  console.log(JSON.stringify({ continue: true }));
+  console.log(JSON.stringify({ continue: true, suppressOutput: true }));
 }
 
 main().catch(() => {
-  console.log(JSON.stringify({ continue: true }));
+  console.log(JSON.stringify({ continue: true, suppressOutput: true }));
 });
