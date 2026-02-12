@@ -151,11 +151,11 @@ describe('Bridge Integration', () => {
   });
 
   describe('Ready status hook', () => {
-    it('emits a ready outbox message when bridge starts', () => {
+    it('emits a ready outbox message after first successful poll cycle', () => {
       const config = makeConfig();
 
-      // Simulate what runBridge() now does at startup:
-      // write initial heartbeat + append ready outbox message
+      // Simulate what runBridge() now does: heartbeat at startup,
+      // then ready emitted after first successful poll (heartbeat write succeeds)
       writeHeartbeat(config.workingDirectory, {
         workerName: config.workerName,
         teamName: config.teamName,
@@ -166,6 +166,7 @@ describe('Bridge Integration', () => {
         status: 'polling',
       });
 
+      // Ready is now emitted inside the loop after first successful heartbeat
       appendOutbox(config.teamName, config.workerName, {
         type: 'ready',
         message: `Worker ${config.workerName} is ready (${config.provider})`,
@@ -185,14 +186,14 @@ describe('Bridge Integration', () => {
     it('ready message appears before any idle message', () => {
       const config = makeConfig();
 
-      // Emit ready (bridge startup)
+      // Emit ready (after first successful poll cycle)
       appendOutbox(config.teamName, config.workerName, {
         type: 'ready',
         message: `Worker ${config.workerName} is ready (${config.provider})`,
         timestamp: new Date().toISOString(),
       });
 
-      // Emit idle (first poll finds no tasks)
+      // Emit idle (poll finds no tasks)
       appendOutbox(config.teamName, config.workerName, {
         type: 'idle',
         message: 'All assigned tasks complete. Standing by.',
