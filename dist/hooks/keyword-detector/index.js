@@ -6,7 +6,7 @@
  *
  * Ported from oh-my-opencode's keyword-detector hook.
  */
-import { isEcomodeEnabled } from '../../features/auto-update.js';
+import { isEcomodeEnabled, isTeamEnabled } from '../../features/auto-update.js';
 /**
  * Autopilot keywords
  */
@@ -72,6 +72,23 @@ export function removeCodeBlocks(text) {
     return result;
 }
 /**
+ * Sanitize text for keyword detection by removing structural noise.
+ * Strips XML tags, URLs, file paths, and code blocks.
+ */
+export function sanitizeForKeywordDetection(text) {
+    // Remove XML tag blocks (opening + content + closing; tag names must match)
+    let result = text.replace(/<(\w[\w-]*)[\s>][\s\S]*?<\/\1>/g, '');
+    // Remove self-closing XML tags
+    result = result.replace(/<\w[\w-]*(?:\s[^>]*)?\s*\/>/g, '');
+    // Remove URLs
+    result = result.replace(/https?:\/\/\S+/g, '');
+    // Remove file paths — requires leading / or ./ or multi-segment dir/file.ext
+    result = result.replace(/(^|[\s"'`(])(?:\.?\/(?:[\w.-]+\/)*[\w.-]+|(?:[\w.-]+\/)+[\w.-]+\.\w+)/gm, '$1');
+    // Remove code blocks (fenced and inline)
+    result = removeCodeBlocks(result);
+    return result;
+}
+/**
  * Extract prompt text from message parts
  */
 export function extractPromptText(parts) {
@@ -79,24 +96,6 @@ export function extractPromptText(parts) {
         .filter(p => p.type === 'text' && p.text)
         .map(p => p.text)
         .join(' ');
-}
-/**
- * Sanitize text to prevent false positives from tags, URLs, file paths, and code.
- */
-export function sanitizeForKeywordDetection(text) {
-    return text
-        // Strip XML-style tag blocks: <tag-name ...>...</tag-name>
-        .replace(/<(\w[\w-]*)[\s>][\s\S]*?<\/\1>/g, '')
-        // Strip self-closing XML tags: <tag-name />, <tag-name attr="val" />
-        .replace(/<\w[\w-]*(?:\s[^>]*)?\s*\/>/g, '')
-        // Strip URLs: http://... or https://... up to whitespace
-        .replace(/https?:\/\/[^\s)>\]]+/g, '')
-        // Strip file paths while preserving the leading delimiter
-        .replace(/(^|[\s"'`(])(?:\/)?(?:[\w.-]+\/)+[\w.-]+/gm, '$1')
-        // Strip markdown code blocks
-        .replace(/```[\s\S]*?```/g, '')
-        // Strip inline code
-        .replace(/`[^`]+`/g, '');
 }
 /**
  * Detect keywords in text and return matches with type info
@@ -132,6 +131,10 @@ export function detectKeywordsWithType(text, _agentName) {
     }
     // Check each keyword type
     for (const type of KEYWORD_PRIORITY) {
+        // Skip team-related types when team feature is disabled
+        if ((type === 'team' || type === 'ultrapilot' || type === 'swarm') && !isTeamEnabled()) {
+            continue;
+        }
         // Skip ecomode detection if disabled in config
         if (type === 'ecomode' && !isEcomodeEnabled()) {
             continue;
@@ -144,6 +147,14 @@ export function detectKeywordsWithType(text, _agentName) {
                 keyword: match[0],
                 position: match.index
             });
+            // Legacy ultrapilot/swarm also activate team mode internally
+            if (type === 'ultrapilot' || type === 'swarm') {
+                detected.push({
+                    type: 'team',
+                    keyword: match[0],
+                    position: match.index
+                });
+            }
         }
     }
     return detected;
@@ -152,15 +163,13 @@ export function detectKeywordsWithType(text, _agentName) {
  * Check if text contains any magic keyword
  */
 export function hasKeyword(text) {
-    const cleanText = removeCodeBlocks(text);
-    return detectKeywordsWithType(cleanText).length > 0;
+    return detectKeywordsWithType(text).length > 0;
 }
 /**
  * Get all detected keywords with conflict resolution applied
  */
 export function getAllKeywords(text) {
-    const cleanText = removeCodeBlocks(text);
-    const detected = detectKeywordsWithType(cleanText);
+    const detected = detectKeywordsWithType(text);
     if (detected.length === 0)
         return [];
     let types = [...new Set(detected.map(d => d.type))];
@@ -171,14 +180,9 @@ export function getAllKeywords(text) {
     if (types.includes('ecomode') && types.includes('ultrawork') && isEcomodeEnabled()) {
         types = types.filter(t => t !== 'ultrawork');
     }
-    // Mutual exclusion: ultrapilot beats autopilot
-    if (types.includes('ultrapilot') && types.includes('autopilot')) {
+    // Mutual exclusion: team beats autopilot (ultrapilot/swarm now map to team at detection)
+    if (types.includes('team') && types.includes('autopilot')) {
         types = types.filter(t => t !== 'autopilot');
-    }
-    // Team is an alias for swarm - map team to swarm for processing
-    // But keep team as distinct for UI purposes
-    if (types.includes('team') && !types.includes('swarm')) {
-        types.push('swarm');
     }
     // Sort by priority order
     return KEYWORD_PRIORITY.filter(k => types.includes(k));
@@ -194,8 +198,7 @@ export function getPrimaryKeyword(text) {
     // Get the highest priority keyword type
     const primaryType = allKeywords[0];
     // Find the original detected keyword for this type
-    const cleanText = removeCodeBlocks(text);
-    const detected = detectKeywordsWithType(cleanText);
+    const detected = detectKeywordsWithType(text);
     const match = detected.find(d => d.type === primaryType);
     return match || null;
 }

@@ -18,6 +18,11 @@ export interface DetectedKeyword {
  */
 export declare function removeCodeBlocks(text: string): string;
 /**
+ * Sanitize text for keyword detection by removing structural noise.
+ * Strips XML tags, URLs, file paths, and code blocks.
+ */
+export declare function sanitizeForKeywordDetection(text: string): string;
+/**
  * Extract prompt text from message parts
  */
 export declare function extractPromptText(parts: Array<{
@@ -25,10 +30,6 @@ export declare function extractPromptText(parts: Array<{
     text?: string;
     [key: string]: unknown;
 }>): string;
-/**
- * Sanitize text to prevent false positives from tags, URLs, file paths, and code.
- */
-export declare function sanitizeForKeywordDetection(text: string): string;
 /**
  * Detect keywords in text and return matches with type info
  */
