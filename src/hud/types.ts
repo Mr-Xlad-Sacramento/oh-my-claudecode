@@ -122,6 +122,9 @@ export interface TranscriptData {
   lastActivatedSkill?: SkillInvocation;
   pendingPermission?: PendingPermission;
   thinkingState?: ThinkingState;
+  toolCallCount: number;
+  agentCallCount: number;
+  skillCallCount: number;
 }
 
 // ============================================================================
@@ -229,6 +232,15 @@ export interface HudRenderContext {
 
   /** Latest available version from npm registry (null if up to date or unknown) */
   updateAvailable: string | null;
+
+  /** Total tool_use blocks seen in transcript */
+  toolCallCount: number;
+
+  /** Total Task/proxy_Task calls seen in transcript */
+  agentCallCount: number;
+
+  /** Total Skill/proxy_Skill calls seen in transcript */
+  skillCallCount: number;
 }
 
 // ============================================================================

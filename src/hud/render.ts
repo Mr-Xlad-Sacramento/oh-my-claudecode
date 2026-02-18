@@ -23,6 +23,7 @@ import { renderCwd } from './elements/cwd.js';
 import { renderGitRepo, renderGitBranch } from './elements/git.js';
 import { renderModel } from './elements/model.js';
 import { renderCallCounts } from './elements/call-counts.js';
+import { renderContextLimitWarning } from './elements/context-warning.js';
 import {
   getAnalyticsDisplay,
   renderAnalyticsLineWithConfig,
