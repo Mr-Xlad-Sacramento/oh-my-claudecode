@@ -1,10 +1,11 @@
 /**
  * OMC HUD - Rate Limits Element
  *
- * Renders 5-hour and weekly rate limit usage display.
+ * Renders 5-hour and weekly rate limit usage display (built-in providers),
+ * and custom rate limit buckets from the rateLimitsProvider command.
  */
 
-import type { RateLimits } from '../types.js';
+import type { RateLimits, CustomProviderResult, CustomBucketUsage } from '../types.js';
 import { RESET } from '../colors.js';
 
 const GREEN = '\x1b[32m';
@@ -58,24 +59,20 @@ function formatResetTime(date: Date | null | undefined): string | null {
 /**
  * Render rate limits display.
  *
- * Format: 5h:45%(3h42m) wk:12%(2d5h) mo:8%(15d3h) cmd:30%(1h20m)
+ * Format: 5h:45%(3h42m) wk:12%(2d5h) mo:8%(15d3h)
  */
 export function renderRateLimits(limits: RateLimits | null): string | null {
   if (!limits) return null;
 
-  const parts: string[] = [];
+  const fiveHour = Math.min(100, Math.max(0, Math.round(limits.fiveHourPercent)));
+  const fiveHourColor = getColor(fiveHour);
+  const fiveHourReset = formatResetTime(limits.fiveHourResetsAt);
 
-  if (limits.fiveHourPercent != null) {
-    const fiveHour = Math.min(100, Math.max(0, Math.round(limits.fiveHourPercent)));
-    const fiveHourColor = getColor(fiveHour);
-    const fiveHourReset = formatResetTime(limits.fiveHourResetsAt);
+  const fiveHourPart = fiveHourReset
+    ? `5h:${fiveHourColor}${fiveHour}%${RESET}${DIM}(${fiveHourReset})${RESET}`
+    : `5h:${fiveHourColor}${fiveHour}%${RESET}`;
 
-    const fiveHourPart = fiveHourReset
-      ? `5h:${fiveHourColor}${fiveHour}%${RESET}${DIM}(${fiveHourReset})${RESET}`
-      : `5h:${fiveHourColor}${fiveHour}%${RESET}`;
-
-    parts.push(fiveHourPart);
-  }
+  const parts = [fiveHourPart];
 
   if (limits.weeklyPercent != null) {
     const weekly = Math.min(100, Math.max(0, Math.round(limits.weeklyPercent)));
@@ -101,38 +98,21 @@ export function renderRateLimits(limits: RateLimits | null): string | null {
     parts.push(monthlyPart);
   }
 
-  if (limits.customPercent != null) {
-    const custom = Math.min(100, Math.max(0, Math.round(limits.customPercent)));
-    const customColor = getColor(custom);
-    const customReset = formatResetTime(limits.customResetsAt);
-    const customLabel = limits.customLabel || 'cmd';
-
-    const customPart = customReset
-      ? `${DIM}${customLabel}:${RESET}${customColor}${custom}%${RESET}${DIM}(${customReset})${RESET}`
-      : `${DIM}${customLabel}:${RESET}${customColor}${custom}%${RESET}`;
-
-    parts.push(customPart);
-  }
-
-  if (parts.length === 0) return null;
   return parts.join(' ');
 }
 
 /**
  * Render compact rate limits (just percentages).
  *
- * Format: 45%/12% or 45%/12%/8% (with monthly) or 45%/30% (with custom)
+ * Format: 45%/12% or 45%/12%/8% (with monthly)
  */
 export function renderRateLimitsCompact(limits: RateLimits | null): string | null {
   if (!limits) return null;
 
-  const parts: string[] = [];
+  const fiveHour = Math.min(100, Math.max(0, Math.round(limits.fiveHourPercent)));
+  const fiveHourColor = getColor(fiveHour);
 
-  if (limits.fiveHourPercent != null) {
-    const fiveHour = Math.min(100, Math.max(0, Math.round(limits.fiveHourPercent)));
-    const fiveHourColor = getColor(fiveHour);
-    parts.push(`${fiveHourColor}${fiveHour}%${RESET}`);
-  }
+  const parts = [`${fiveHourColor}${fiveHour}%${RESET}`];
 
   if (limits.weeklyPercent != null) {
     const weekly = Math.min(100, Math.max(0, Math.round(limits.weeklyPercent)));
@@ -146,20 +126,13 @@ export function renderRateLimitsCompact(limits: RateLimits | null): string | nul
     parts.push(`${monthlyColor}${monthly}%${RESET}`);
   }
 
-  if (limits.customPercent != null) {
-    const custom = Math.min(100, Math.max(0, Math.round(limits.customPercent)));
-    const customColor = getColor(custom);
-    parts.push(`${customColor}${custom}%${RESET}`);
-  }
-
-  if (parts.length === 0) return null;
   return parts.join('/');
 }
 
 /**
  * Render rate limits with visual progress bars.
  *
- * Format: 5h:[████░░░░░░]45%(3h42m) wk:[█░░░░░░░░░]12%(2d5h) mo:[░░░░░░░░░░]8%(15d3h) cmd:[███░░░░░░░]30%
+ * Format: 5h:[████░░░░░░]45%(3h42m) wk:[█░░░░░░░░░]12%(2d5h) mo:[░░░░░░░░░░]8%(15d3h)
  */
 export function renderRateLimitsWithBar(
   limits: RateLimits | null,
@@ -167,22 +140,18 @@ export function renderRateLimitsWithBar(
 ): string | null {
   if (!limits) return null;
 
-  const parts: string[] = [];
+  const fiveHour = Math.min(100, Math.max(0, Math.round(limits.fiveHourPercent)));
+  const fiveHourColor = getColor(fiveHour);
+  const fiveHourFilled = Math.round((fiveHour / 100) * barWidth);
+  const fiveHourEmpty = barWidth - fiveHourFilled;
+  const fiveHourBar = `${fiveHourColor}${'█'.repeat(fiveHourFilled)}${DIM}${'░'.repeat(fiveHourEmpty)}${RESET}`;
+  const fiveHourReset = formatResetTime(limits.fiveHourResetsAt);
 
-  if (limits.fiveHourPercent != null) {
-    const fiveHour = Math.min(100, Math.max(0, Math.round(limits.fiveHourPercent)));
-    const fiveHourColor = getColor(fiveHour);
-    const fiveHourFilled = Math.round((fiveHour / 100) * barWidth);
-    const fiveHourEmpty = barWidth - fiveHourFilled;
-    const fiveHourBar = `${fiveHourColor}${'█'.repeat(fiveHourFilled)}${DIM}${'░'.repeat(fiveHourEmpty)}${RESET}`;
-    const fiveHourReset = formatResetTime(limits.fiveHourResetsAt);
+  const fiveHourPart = fiveHourReset
+    ? `5h:[${fiveHourBar}]${fiveHourColor}${fiveHour}%${RESET}${DIM}(${fiveHourReset})${RESET}`
+    : `5h:[${fiveHourBar}]${fiveHourColor}${fiveHour}%${RESET}`;
 
-    const fiveHourPart = fiveHourReset
-      ? `5h:[${fiveHourBar}]${fiveHourColor}${fiveHour}%${RESET}${DIM}(${fiveHourReset})${RESET}`
-      : `5h:[${fiveHourBar}]${fiveHourColor}${fiveHour}%${RESET}`;
-
-    parts.push(fiveHourPart);
-  }
+  const parts = [fiveHourPart];
 
   if (limits.weeklyPercent != null) {
     const weekly = Math.min(100, Math.max(0, Math.round(limits.weeklyPercent)));
@@ -214,22 +183,75 @@ export function renderRateLimitsWithBar(
     parts.push(monthlyPart);
   }
 
-  if (limits.customPercent != null) {
-    const custom = Math.min(100, Math.max(0, Math.round(limits.customPercent)));
-    const customColor = getColor(custom);
-    const customFilled = Math.round((custom / 100) * barWidth);
-    const customEmpty = barWidth - customFilled;
-    const customBar = `${customColor}${'█'.repeat(customFilled)}${DIM}${'░'.repeat(customEmpty)}${RESET}`;
-    const customReset = formatResetTime(limits.customResetsAt);
-    const customLabel = limits.customLabel || 'cmd';
+  return parts.join(' ');
+}
 
-    const customPart = customReset
-      ? `${DIM}${customLabel}:${RESET}[${customBar}]${customColor}${custom}%${RESET}${DIM}(${customReset})${RESET}`
-      : `${DIM}${customLabel}:${RESET}[${customBar}]${customColor}${custom}%${RESET}`;
+// ============================================================================
+// Custom provider bucket rendering
+// ============================================================================
 
-    parts.push(customPart);
+/**
+ * Compute a 0-100 usage percentage for threshold checks.
+ * Returns null for string usage (no numeric basis).
+ */
+function bucketUsagePercent(usage: CustomBucketUsage): number | null {
+  if (usage.type === 'percent') return usage.value;
+  if (usage.type === 'credit' && usage.limit > 0) return (usage.used / usage.limit) * 100;
+  return null;
+}
+
+/**
+ * Render a bucket usage value as a display string.
+ *   percent  → "32%"
+ *   credit   → "250/300"
+ *   string   → value as-is
+ */
+function renderBucketUsageValue(usage: CustomBucketUsage): string {
+  if (usage.type === 'percent') return `${Math.round(usage.value)}%`;
+  if (usage.type === 'credit') return `${usage.used}/${usage.limit}`;
+  return usage.value;
+}
+
+/**
+ * Render custom rate limit buckets from the rateLimitsProvider command.
+ *
+ * Format (normal):  label:32%  label2:250/300  label3:as-is
+ * Format (stale):   label:32%*  (asterisk marks stale/cached data)
+ * Format (error):   [cmd:err]
+ *
+ * resetsAt is shown only when usage exceeds thresholdPercent (default 85).
+ */
+export function renderCustomBuckets(
+  result: CustomProviderResult,
+  thresholdPercent: number = 85,
+): string | null {
+  // Command failed and no cached data
+  if (result.error && result.buckets.length === 0) {
+    return `${YELLOW}[cmd:err]${RESET}`;
   }
 
-  if (parts.length === 0) return null;
+  if (result.buckets.length === 0) return null;
+
+  const staleMarker = result.stale ? `${DIM}*${RESET}` : '';
+
+  const parts = result.buckets.map((bucket) => {
+    const pct = bucketUsagePercent(bucket.usage);
+    const color = pct != null ? getColor(pct) : '';
+    const colorReset = pct != null ? RESET : '';
+    const usageStr = renderBucketUsageValue(bucket.usage);
+
+    // Show resetsAt only above threshold (string usage never shows it)
+    let resetPart = '';
+    if (bucket.resetsAt && pct != null && pct >= thresholdPercent) {
+      const d = new Date(bucket.resetsAt);
+      if (!isNaN(d.getTime())) {
+        const str = formatResetTime(d);
+        if (str) resetPart = `${DIM}(${str})${RESET}`;
+      }
+    }
+
+    return `${DIM}${bucket.label}:${RESET}${color}${usageStr}${colorReset}${staleMarker}${resetPart}`;
+  });
+
   return parts.join(' ');
 }
